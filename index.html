@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Athlete Signup - Vite + React</title>
+
+    <!-- Google Maps API (Autocomplete and Places) -->
+    <script
+      src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAteJvj6XJOBr45rzUzWa0cFyaIDlP7xuE&libraries=places"
+      defer
+    ></script>
+
+    <!-- Preload App -->
+    <link rel="preload" href="/src/main.jsx" as="script" />
+    
+    <!-- Remove the basic styling since we're using Tailwind -->
+  </head>
+  
+  <body class="bg-gray-900 min-h-screen">
+    <div id="root"></div>
+
+    <!-- React App Mount Point -->
+    <script type="module" src="/src/main.jsx"></script>
+
+    <!-- Fallback in case Google Maps fails -->
+    <script>
+      window.onload = function () {
+        if (!window.google) {
+          console.error("Google Maps API failed to load. Please check the API key.");
+        }
+      };
+    </script>
+  </body>
+</html>
