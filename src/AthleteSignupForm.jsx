@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { AlertCircle } from 'lucide-react';
 
 const AthleteSignupForm = () => {
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -19,14 +20,38 @@ const AthleteSignupForm = () => {
     address: '',
   });
 
+  const formatPhoneNumber = (phone) => {
+    // Remove all non-digit characters
+    const digitsOnly = phone.replace(/\D/g, '');
+    
+    // If the number already starts with 1 and has 11 digits, use as is
+    // If it's 10 digits, add 1 at the start
+    // Otherwise, return the original cleaned number with 1 prepended
+    if (digitsOnly.length === 10) {
+      return `1${digitsOnly}`;
+    } else if (digitsOnly.length === 11 && digitsOnly.startsWith('1')) {
+      return digitsOnly;
+    } else {
+      // For any other case, we'll still format it but this might need validation
+      return `1${digitsOnly.slice(-10)}`;
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setIsSubmitting(true);
     
     const scriptUrl = "https://script.google.com/macros/s/AKfycbyj8W6jKgF9Z52cY3SNcSFtWGN7fmT7vwYqOaHmN-PQJpP-1b8BEIh1TL5ORMzK8XwT/exec";
     
     const formPayload = new URLSearchParams();
     
-    Object.entries(formData).forEach(([key, value]) => {
+    // Format the data with phone number formatting
+    const formattedData = {
+      ...formData,
+      phone: formatPhoneNumber(formData.phone)
+    };
+    
+    Object.entries(formattedData).forEach(([key, value]) => {
       formPayload.append(key, value);
     });
     
@@ -59,6 +84,8 @@ const AthleteSignupForm = () => {
       }
     } catch (error) {
       alert('Error submitting form.');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -78,7 +105,7 @@ const AthleteSignupForm = () => {
         types: ['address']
       });
       const schoolAutocomplete = new window.google.maps.places.Autocomplete(schoolInput, {
-        types: ['school']
+        types: ['establishment']
       });
 
       addressAutocomplete.addListener('place_changed', () => {
@@ -97,6 +124,20 @@ const AthleteSignupForm = () => {
         }));
       });
     }
+  }, []);
+
+  // Add keyframes for progress bar animation
+  useEffect(() => {
+    const style = document.createElement('style');
+    style.textContent = `
+      @keyframes progressBar {
+        0% { width: 0%; }
+        50% { width: 100%; }
+        100% { width: 0%; }
+      }
+    `;
+    document.head.appendChild(style);
+    return () => document.head.removeChild(style);
   }, []);
 
   const inputStyle = "w-full p-2 rounded-lg bg-gray-800/50 border border-gray-700/50 text-white placeholder-gray-400 focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 backdrop-blur-sm transition-all duration-200";
@@ -231,7 +272,7 @@ const AthleteSignupForm = () => {
                 />
               </div>
               <div>
-                <label className={labelStyle}>League</label>
+                <label className={labelStyle}>Conference</label>
                 <input
                   type="text"
                   name="league"
@@ -304,13 +345,25 @@ const AthleteSignupForm = () => {
             </div>
           </div>
 
+          {isSubmitting && (
+            <div className="mb-4">
+              <div className="w-full bg-gray-700/30 rounded-full h-2 mb-1">
+                <div className="bg-blue-500 h-2 rounded-full animate-[progressBar_2s_ease-in-out_infinite]"></div>
+              </div>
+              <p className="text-sm text-gray-400 text-center">Submitting your registration...</p>
+            </div>
+          )}
+
           <div className="flex justify-end">
             <button
               type="submit"
+              disabled={isSubmitting}
               className="px-6 py-2 rounded-lg bg-gradient-to-r from-blue-600 to-blue-700 text-white font-medium
                        hover:from-blue-500 hover:to-blue-600 transition-all duration-200 transform hover:scale-105
                        border border-blue-500/30 backdrop-blur-sm"
               style={{
+                opacity: isSubmitting ? 0.7 : 1,
+                cursor: isSubmitting ? 'not-allowed' : 'pointer',
                 boxShadow: `
                   0 0 20px 0 rgba(37,99,235,0.3),
                   inset 0 0 20px 0 rgba(37,99,235,0.2)
